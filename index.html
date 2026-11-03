@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Letters for ShaSha</title>
+<link href="https://fonts.googleapis.com/css?family=Indie+Flower" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: lightgoldenrodyellow;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #2a1e14;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 12px 40px;
+  overflow-x: hidden;
+}
+
+/* SVG filter for paper noise - defined in HTML */
+
+/* ========== REALISTIC CRUMPLED PAPER ========== */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: lightgoldenrodyellow;
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+.intro.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.crumple-wrap {
+  position: relative;
+  width: min(240px, 68vw);
+  height: min(290px, 50vh);
+  cursor: pointer;
+  filter: drop-shadow(0 16px 28px rgba(0,0,0,0.25));
+  transition: filter 1.5s ease;
+}
+.crumple-wrap.opened {
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,0.15));
+}
+
+.crumple {
+  position: absolute;
+  inset: 0;
+  background: #f3e9d6;
+  /* very irregular crumpled silhouette */
+  border-radius: 42% 28% 38% 22% / 32% 45% 25% 48%;
+  overflow: hidden;
+  transform: rotate(-14deg) scale(0.88) skewX(-3deg) skewY(2deg);
+  transition:
+    transform 1.8s cubic-bezier(0.16, 1, 0.3, 1),
+    border-radius 1.8s cubic-bezier(0.16, 1, 0.3, 1),
+    background 1.5s ease;
+}
+
+/* paper fiber texture via SVG filter */
+.crumple .texture {
+  position: absolute;
+  inset: -20%;
+  background: #f3e9d6;
+  filter: url(#paperNoise);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 1.4s ease;
+}
+
+/* dark fold valleys */
+.crumple .valley {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 1.3s ease, transform 1.5s ease;
+}
+.crumple .v1 {
+  width: 140%; height: 18px;
+  top: 18%; left: -20%;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.12), rgba(0,0,0,0.06), transparent);
+  transform: rotate(-22deg);
+  filter: blur(1px);
+}
+.crumple .v2 {
+  width: 150%; height: 22px;
+  top: 42%; left: -25%;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.14), rgba(0,0,0,0.05), transparent);
+  transform: rotate(15deg);
+  filter: blur(1px);
+}
+.crumple .v3 {
+  width: 130%; height: 16px;
+  top: 65%; left: -15%;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent);
+  transform: rotate(-11deg);
+  filter: blur(1px);
+}
+.crumple .v4 {
+  width: 20px; height: 120%;
+  top: -10%; left: 28%;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.11), rgba(0,0,0,0.04), transparent);
+  transform: rotate(9deg);
+  filter: blur(1px);
+}
+.crumple .v5 {
+  width: 18px; height: 110%;
+  top: -5%; left: 58%;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.09), transparent);
+  transform: rotate(-16deg);
+  filter: blur(1px);
+}
+.crumple .v6 {
+  width: 120%; height: 14px;
+  top: 78%; left: -10%;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.08), transparent);
+  transform: rotate(6deg);
+  filter: blur(0.5px);
+}
+
+/* bright ridge highlights (paper edges catching light) */
+.crumple .ridge {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 1.3s ease;
+}
+.crumple .r1 {
+  width: 140%; height: 3px;
+  top: 20%; left: -20%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.45), transparent);
+  transform: rotate(-22deg);
+}
+.crumple .r2 {
+  width: 150%; height: 2px;
+  top: 44%; left: -25%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.35), transparent);
+  transform: rotate(15deg);
+}
+.crumple .r3 {
+  width: 3px; height: 100%;
+  top: 0; left: 30%;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.3), transparent);
+  transform: rotate(9deg);
+}
+
+/* crushed corner blobs */
+.crumple .crush {
+  position: absolute;
+  border-radius: 40% 60% 50% 45%;
+  background: radial-gradient(ellipse at 40% 40%, rgba(0,0,0,0.08), transparent 65%);
+  pointer-events: none;
+  transition: opacity 1.2s ease, transform 1.5s ease;
+}
+.crumple .cr1 { width: 90px; height: 70px; top: 5%; left: 5%; transform: rotate(-20deg); }
+.crumple .cr2 { width: 80px; height: 75px; top: 8%; right: 0; transform: rotate(25deg); }
+.crumple .cr3 { width: 100px; height: 60px; bottom: 5%; left: 15%; transform: rotate(10deg); }
+.crumple .cr4 { width: 70px; height: 80px; bottom: 10%; right: 5%; transform: rotate(-15deg); }
+.crumple .cr5 { width: 60px; height: 55px; top: 40%; left: 35%; }
+
+/* overall shading for volume */
+.crumple .shade {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 25%, transparent 20%, rgba(0,0,0,0.06) 80%),
+    radial-gradient(ellipse at 75% 70%, transparent 25%, rgba(0,0,0,0.05) 75%),
+    linear-gradient(145deg, rgba(255,255,255,0.15) 0%, transparent 40%, rgba(0,0,0,0.06) 100%);
+  pointer-events: none;
+  transition: opacity 1.4s ease;
+  mix-blend-mode: multiply;
+}
+
+.crumple-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Indie Flower', cursive;
+  font-size: 1.35rem;
+  color: #5c4532;
+  text-align: center;
+  line-height: 1.45;
+  padding: 28px;
+  z-index: 5;
+  transition: opacity 0.5s ease 0.3s;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  pointer-events: none;
+}
+
+/* idle breathe while crumpled */
+.crumple-wrap:not(.opened) .crumple {
+  animation: breathe 3.2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: rotate(-14deg) scale(0.88) skewX(-3deg) skewY(2deg) translateY(0); }
+  50% { transform: rotate(-11deg) scale(0.91) skewX(-2deg) skewY(1deg) translateY(-5px); }
+}
+
+/* ===== UNCRUMPLE STATE ===== */
+.crumple-wrap.opened .crumple {
+  animation: none;
+  transform: rotate(0) scale(1) skewX(0) skewY(0);
+  border-radius: 4px;
+  background: #faf6ee;
+}
+.crumple-wrap.opened .texture { opacity: 0.15; }
+.crumple-wrap.opened .valley,
+.crumple-wrap.opened .ridge,
+.crumple-wrap.opened .crush,
+.crumple-wrap.opened .shade {
+  opacity: 0;
+}
+.crumple-wrap.opened .crumple-label {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.tap-hint {
+  margin-top: 32px;
+  font-family: 'Indie Flower', cursive;
+  font-size: 1.15rem;
+  color: #6b5340;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.95; }
+}
+.intro.hide .tap-hint { display: none; }
+
+/* ========== MAIN ========== */
+.main {
+  width: 100%;
+  max-width: 450px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.97);
+  transition: opacity 0.85s ease, transform 0.85s ease;
+  pointer-events: none;
+}
+.main.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  min-height: 42px;
+}
+.nav button {
+  font-family: 'Indie Flower', cursive;
+  font-size: 1.05rem;
+  padding: 8px 20px;
+  border: 1.5px solid #b8956a;
+  background: transparent;
+  color: #5c4532;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.nav button.active {
+  background: #5c4532;
+  color: #f5ebe0;
+  border-color: #5c4532;
+}
+.nav button.hidden { display: none; }
+.nav button.reveal {
+  display: inline-block;
+  animation: fadeBtn 0.6s ease;
+}
+@keyframes fadeBtn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.paper {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  height: 550px;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0px 0px 8px 0px #888;
+  display: none;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.paper.active {
+  display: block;
+  animation: paperIn 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes paperIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.paper::before {
+  content: '';
+  position: absolute;
+  left: 45px;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: rgba(255,0,0,0.4);
+  z-index: 2;
+}
+
+.holes {
+  position: absolute;
+  left: 10px;
+  height: 25px;
+  width: 25px;
+  background: lightgoldenrodyellow;
+  border-radius: 50%;
+  box-shadow: inset 0px 0px 2px 0px #888;
+  z-index: 3;
+}
+.hole-top { top: 10%; }
+.hole-middle { top: 50%; transform: translateY(-50%); }
+.hole-bottom { bottom: 10%; }
+
+.lines {
+  margin-top: 40px;
+  height: calc(100% - 40px);
+  width: 100%;
+  background-image: repeating-linear-gradient(
+    white 0px,
+    white 24px,
+    steelblue 25px
+  );
+  position: relative;
+}
+
+.text {
+  position: absolute;
+  top: 65px;
+  left: 55px;
+  bottom: 16px;
+  right: 14px;
+  line-height: 25px;
+  font-family: 'Indie Flower', cursive;
+  font-size: 1.15rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: #2a1e14;
+  scroll-behavior: smooth;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  animation: bounceScroll 1.6s ease-in-out infinite;
+}
+.scroll-hint.show { display: flex; }
+.scroll-hint span {
+  font-family: 'Indie Flower', cursive;
+  font-size: 0.9rem;
+  color: #6b5340;
+  background: rgba(255,255,255,0.9);
+  padding: 4px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.scroll-hint .arrow {
+  font-size: 1.1rem;
+  color: #8a6a48;
+  margin-top: 2px;
+}
+@keyframes bounceScroll {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(5px); }
+}
+
+.letter-label {
+  font-size: 0.95rem;
+  color: #8a6a48;
+  margin-bottom: 2px;
+}
+.greeting {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.body {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.sign {
+  margin-top: 18px;
+  text-align: right;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.sign.show { opacity: 1; }
+.sign .closing {
+  font-style: italic;
+  font-size: 1rem;
+  color: #5a4534;
+}
+.sign .name {
+  font-size: 1.25rem;
+  margin-top: 2px;
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #2a1e14;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: blink 0.75s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+@media (max-width: 480px) {
+  .paper { height: 500px; }
+  .text { font-size: 1.05rem; left: 50px; }
+  .paper::before { left: 40px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SVG filter for realistic paper grain -->
+<svg width="0" height="0" style="position:absolute">
+  <filter id="paperNoise">
+    <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" result="noise"/>
+    <feDiffuseLighting in="noise" lighting-color="#f3e9d6" surfaceScale="2" result="light">
+      <feDistantLight azimuth="45" elevation="55"/>
+    </feDiffuseLighting>
+    <feBlend in="SourceGraphic" in2="light" mode="multiply"/>
+  </filter>
+</svg>
+
+<!-- CRUMPLED PAPER -->
+<div class="intro" id="intro">
+  <div class="crumple-wrap" id="crumpleWrap">
+    <div class="crumple">
+      <div class="texture"></div>
+      <div class="valley v1"></div>
+      <div class="valley v2"></div>
+      <div class="valley v3"></div>
+      <div class="valley v4"></div>
+      <div class="valley v5"></div>
+      <div class="valley v6"></div>
+      <div class="ridge r1"></div>
+      <div class="ridge r2"></div>
+      <div class="ridge r3"></div>
+      <div class="crush cr1"></div>
+      <div class="crush cr2"></div>
+      <div class="crush cr3"></div>
+      <div class="crush cr4"></div>
+      <div class="crush cr5"></div>
+      <div class="shade"></div>
+      <div class="crumple-label">A letter<br>for ShaSha</div>
+    </div>
+  </div>
+  <div class="tap-hint">tap to uncrumple</div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main">
+
+  <div class="nav">
+    <button class="active" data-letter="1" id="btn1">Letter 1</button>
+    <button class="hidden" data-letter="2" id="btn2">Letter 2</button>
+  </div>
+
+  <div class="paper active" id="paper1">
+    <div class="lines">
+      <div class="text" id="text1">
+        <div class="letter-label">Letter One</div>
+        <div class="greeting">Dear ShaSha,</div>
+        <div class="body" id="body1"></div>
+        <div class="sign" id="sign1">
+          <div class="closing">With gratitude & care,</div>
+          <div class="name">Always</div>
+        </div>
+      </div>
+    </div>
+    <div class="holes hole-top"></div>
+    <div class="holes hole-middle"></div>
+    <div class="holes hole-bottom"></div>
+    <div class="scroll-hint" id="scrollHint1">
+      <span>scroll down</span>
+      <div class="arrow">↓</div>
+    </div>
+  </div>
+
+  <div class="paper" id="paper2">
+    <div class="lines">
+      <div class="text" id="text2">
+        <div class="letter-label">Letter Two</div>
+        <div class="greeting">Dear ShaSha,</div>
+        <div class="body" id="body2"></div>
+        <div class="sign" id="sign2">
+          <div class="closing">With gratitude & care,</div>
+          <div class="name">Always</div>
+        </div>
+      </div>
+    </div>
+    <div class="holes hole-top"></div>
+    <div class="holes hole-middle"></div>
+    <div class="holes hole-bottom"></div>
+    <div class="scroll-hint" id="scrollHint2">
+      <span>scroll down</span>
+      <div class="arrow">↓</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var letter1 = "Sorry if this has to be my last chat with you for , ShaSha. I really need to focus more on my studies and academics. There are times na hindi kita nakakausap or nai-ignore kita because I overthink and sometimes hindi ko alam kung ano sasabihin ko. I also feel like parang nawawalan ka na ng gana makipag-chat sa akin, unlike before na ang saya nating mag usap and pareho tayong talkative. I miss those times, honestly. Sorry if I've been distant lately. I just want you to know na I'm thankful for you, especially for being there and comforting me whenever I need it. Even though hindi na ako palaging nandito para magremind sa'yo, please always stay safe, wag na wag kang magpapalipas ng gutom, and always take care of yourself, ha? Thank you for everything, ShaSha. I hope you understand.";
+
+  var letter2 = "And may something din pala akong gustong sabihin sa'yo, pero honestly, hindi ko alam kung paano ko sisimulan. Uhmmm, I like you, pero hindi sa romantic way or like gusto kita as someone na magiging partner ko. I mean, gusto ko yung personality mo, yung humor mo, and the way you are. I admire how smart you are, how focused you are sa acads mo, and how you handle things. I like how you make conversations fun and how you can make someone smile without even trying. Hindi ko rin alam kung paano ko siya ie-explain nang maayos, pero I genuinely like you as a person. I appreciate everything about you, and I'm really glad na nakilala kita. I just wanted to let you know because I don't want to keep this to myself. I hope you understand what I mean and please don't misunderstand my intentions.";
+
+  var intro = document.getElementById("intro");
+  var wrap = document.getElementById("crumpleWrap");
+  var main = document.getElementById("main");
+  var btn2 = document.getElementById("btn2");
+  var opened = false;
+  var timers = {};
+
+  function checkScroll(textEl, hintEl) {
+    if (!textEl || !hintEl) return;
+    var needsScroll = textEl.scrollHeight > textEl.clientHeight + 8;
+    var atBottom = textEl.scrollTop + textEl.clientHeight >= textEl.scrollHeight - 12;
+    if (needsScroll && !atBottom) hintEl.classList.add("show");
+    else hintEl.classList.remove("show");
+  }
+
+  function setupScrollHint(textId, hintId) {
+    var textEl = document.getElementById(textId);
+    var hintEl = document.getElementById(hintId);
+    if (!textEl || !hintEl) return;
+    textEl.addEventListener("scroll", function () { checkScroll(textEl, hintEl); });
+    setInterval(function () {
+      if (textEl.closest(".paper").classList.contains("active")) {
+        checkScroll(textEl, hintEl);
+      }
+    }, 400);
+  }
+  setupScrollHint("text1", "scrollHint1");
+  setupScrollHint("text2", "scrollHint2");
+
+  function typeLetter(text, bodyId, signId, onDone) {
+    var body = document.getElementById(bodyId);
+    var sign = document.getElementById(signId);
+    if (timers[bodyId]) clearTimeout(timers[bodyId]);
+    body.innerHTML = "";
+    sign.className = "sign";
+    var i = 0;
+    function step() {
+      if (i >= text.length) {
+        body.innerHTML += '<span class="cursor"></span>';
+        sign.className = "sign show";
+        if (onDone) onDone();
+        return;
+      }
+      body.textContent += text.charAt(i);
+      i++;
+      var textEl = body.parentElement;
+      if (textEl) textEl.scrollTop = textEl.scrollHeight;
+      var ch = text.charAt(i - 1);
+      var wait = 14;
+      if (ch === "." || ch === "!" || ch === "?") wait = 95;
+      else if (ch === "," || ch === ";") wait = 35;
+      else if (ch === " ") wait = 14;
+      timers[bodyId] = setTimeout(step, wait);
+    }
+    step();
+  }
+
+  function open() {
+    if (opened) return;
+    opened = true;
+    wrap.classList.add("opened");
+    setTimeout(function () {
+      intro.classList.add("hide");
+      main.classList.add("show");
+      typeLetter(letter1, "body1", "sign1", function () {
+        btn2.classList.remove("hidden");
+        btn2.classList.add("reveal");
+      });
+    }, 1800);
+  }
+
+  wrap.addEventListener("click", open);
+  intro.addEventListener("click", function () { if (!opened) open(); });
+
+  document.querySelectorAll(".nav button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var num = btn.getAttribute("data-letter");
+      document.querySelectorAll(".nav button").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("paper1").classList.remove("active");
+      document.getElementById("paper2").classList.remove("active");
+      document.getElementById("paper" + num).classList.add("active");
+      if (num === "1") typeLetter(letter1, "body1", "sign1");
+      else typeLetter(letter2, "body2", "sign2");
+    });
+  });
+})();
+</script>
+</body>
+</html>
